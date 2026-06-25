@@ -1,0 +1,53 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+
+const navLinks = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/assessment', label: 'Assessment' },
+  { href: '/results', label: 'Results' },
+  { href: '/chat', label: 'Assistant' },
+  { href: '/profile', label: 'Profile' },
+];
+
+export function Navbar() {
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  return (
+    <nav className="bg-surface/60 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-border shadow-sm">
+      <div className="flex justify-between items-center h-16 px-6 max-w-[1280px] mx-auto">
+        <Link href="/dashboard" className="font-semibold text-primary tracking-tight text-lg">
+          AI Career Path Simulator
+        </Link>
+        <div className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => {
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm transition-colors ${
+                  isActive ? 'text-primary font-semibold border-b-2 border-primary pb-0.5' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground hidden sm:block">{user?.fullName}</span>
+          <button
+            onClick={logout}
+            className="text-sm text-muted-foreground hover:text-foreground border border-border px-3 py-1.5 rounded-lg hover:border-primary/50 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}

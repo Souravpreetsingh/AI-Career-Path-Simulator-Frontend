@@ -1,0 +1,146 @@
+'use client';
+
+import { Suspense, useState, useEffect, useRef, FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useChatHistory, useSendMessage } from '@/hooks/useChat';
+import { usePrompts } from '@/hooks/useRecommendations';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+function ChatContent() {
+  const searchParams = useSearchParams();
+  const presetQuery = searchParams.get('q');
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [presetSent, setPresetSent] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: prompts } = usePrompts();
+  const sendMutation = useSendMessage();
+
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    if (presetQuery && !presetSent) {
+      setPresetSent(true);
+      handleSend(presetQuery);
+    }
+  }, [presetQuery]);
+
+  async function handleSend(message?: string) {
+    const text = message || input;
+    if (!text.trim() || sendMutation.isPending) return;
+
+    const userMsg: Message = { role: 'user', content: text, timestamp: new Date().toISOString() };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
+
+    try {
+      const result = await sendMutation.mutateAsync({ message: text, chatId: activeChatId || undefined });
+      const assistantMsg: Message = {
+        role: 'assistant',
+        content: result.assistantMessage?.content || 'Let me provide some guidance on that.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+      if (result.chatId && !activeChatId) setActiveChatId(result.chatId);
+    } catch {
+      setMessages((prev) => prev.slice(0, -1));
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    await handleSend();
+  }
+
+  function newChat() {
+    setActiveChatId(null);
+    setMessages([]);
+  }
+
+  const displayPrompts = prompts && prompts.length > 0 ? prompts : [
+    'How do I become an AI Engineer?', 'What skills are in demand for 2026?',
+    'How do I transition to data science?', 'What certifications should I pursue?',
+    'How to prepare for a technical interview?', 'What is the best career path for me?',
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-lg font-semibold text-foreground">AI Career Assistant</h1>
+        <Button variant="outline" size="sm" onClick={newChat} className="text-xs border-border/50">New Chat</Button>
+      </div>
+
+      <Card className="flex-1 bg-surface-container/50 border-border/50 flex flex-col overflow-hidden">
+        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                <span className="text-2xl text-primary">AI</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">How can I help you?</h2>
+                <p className="text-sm text-muted-foreground mt-1">Ask me anything about careers, skills, or growth.</p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+                {displayPrompts.map((prompt: string, i: number) => (
+                  <button key={i} onClick={() => handleSend(prompt)}
+                    className="px-4 py-2 rounded-full bg-surface-dim border border-border/50 text-sm text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] p-3 rounded-lg text-sm ${
+                  msg.role === 'user'
+                    ? 'bg-primary-container/20 text-foreground border border-primary/20'
+                    : 'bg-surface-variant/50 text-foreground border border-border/30'
+                }`}>
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            ))
+          )}
+          {sendMutation.isPending && (
+            <div className="flex justify-start">
+              <div className="bg-surface-variant/50 border border-border/30 rounded-lg p-3">
+                <span className="animate-pulse text-sm text-muted-foreground">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </CardContent>
+
+        <form onSubmit={handleSubmit} className="p-4 border-t border-border/50 flex gap-2">
+          <Input value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about careers, skills, or guidance..."
+            className="bg-surface-dim border-border/50 flex-1" disabled={sendMutation.isPending} />
+          <Button type="submit" disabled={!input.trim() || sendMutation.isPending}
+            className="bg-primary-container text-on-primary-container hover:bg-primary-container/90">Send</Button>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
+      <ChatContent />
+    </Suspense>
+  );
+}
