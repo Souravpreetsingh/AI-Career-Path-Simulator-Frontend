@@ -39,7 +39,12 @@ export default function SignupPage() {
       });
       router.push('/assessment');
     } catch (err: any) {
-      setError(err?.message || 'Registration failed');
+      const msg = err?.response?.data?.message || err?.message || 'Registration failed';
+      if (msg.includes('duplicate') || msg.includes('already exists') || err?.response?.status === 409) {
+        setError('This email is already registered. Please try logging in instead.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

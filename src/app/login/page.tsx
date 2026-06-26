@@ -25,7 +25,12 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err?.message || 'Invalid email or password');
+      const msg = err?.response?.data?.message || err?.message || 'Invalid email or password';
+      if (err?.response?.status === 401) {
+        setError('Invalid email or password. Try demo@careerpath.com / Demo123!');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,6 +70,11 @@ export default function LoginPage() {
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
           </p>
+          <div className="mt-4 p-3 rounded-lg bg-surface-variant/30 border border-border/30 text-xs text-muted-foreground">
+            <p className="font-medium mb-1">Demo Accounts:</p>
+            <p>admin@careerpath.com / student@careerpath.com / demo@careerpath.com</p>
+            <p className="text-primary">Password: Demo123!</p>
+          </div>
         </CardContent>
       </Card>
     </div>
