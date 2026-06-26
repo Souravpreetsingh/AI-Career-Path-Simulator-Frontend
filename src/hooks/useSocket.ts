@@ -43,12 +43,17 @@ export function useChatSocket(token: string | null) {
     socketRef.current?.emit('typing', { chatId, isTyping });
   }, []);
 
+  const onAiTyping = useCallback((handler: (data: { isTyping: boolean; chatId?: string }) => void) => {
+    socketRef.current?.on('aiTyping', handler);
+    return () => { socketRef.current?.off('aiTyping', handler); };
+  }, []);
+
   const onError = useCallback((handler: (data: any) => void) => {
     socketRef.current?.on('error', handler);
     return () => { socketRef.current?.off('error', handler); };
   }, []);
 
-  return { connected, sendMessage, onNewMessage, joinChat, onChatHistory, sendTyping, onError };
+  return { connected, sendMessage, onNewMessage, joinChat, onChatHistory, sendTyping, onAiTyping, onError };
 }
 
 export function useDashboardSocket(token: string | null) {
