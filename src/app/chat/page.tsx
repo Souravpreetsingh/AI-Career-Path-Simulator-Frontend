@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useRef, FormEvent, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/GuestContext';
 import { useChatHistory, useSendMessage } from '@/hooks/useChat';
 import { usePrompts } from '@/hooks/useRecommendations';
 import { useChatSocket } from '@/hooks/useSocket';

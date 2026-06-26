@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/GuestContext';
 import { useDashboardStats } from '@/hooks/useDashboard';
 import { userApi, UpdateProfileDto } from '@/services/api/user.api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

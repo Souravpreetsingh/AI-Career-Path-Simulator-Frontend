@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -22,7 +22,7 @@ const axiosClient = axios.create({
   timeout: 15000,
 });
 
-axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+axiosClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
     if (token && config.headers) {
@@ -37,16 +37,6 @@ axiosClient.interceptors.response.use(
   async (error: AxiosError<ApiResponse>) => {
     const status = error.response?.status;
     const message = error.response?.data?.message || error.message || 'Network error';
-
-    if (status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    }
-
     return Promise.reject({ status, message });
   },
 );

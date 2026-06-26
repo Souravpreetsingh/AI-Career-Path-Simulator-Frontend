@@ -58,6 +58,9 @@ export const authApi = {
   resetPassword: (token: string, newPassword: string) =>
     axiosClient.post<ApiResponse<null>>('/auth/reset-password', { token, newPassword }),
 
+  guest: () =>
+    axiosClient.post<ApiResponse<AuthResult>>('/auth/guest'),
+
   getProfile: () =>
     axiosClient.get<ApiResponse<any>>('/auth/profile'),
 };

@@ -21,14 +21,14 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (dto: { fullName: string; email: string; password: string; collegeName?: string; course?: string; graduationYear?: number }) => Promise<void>;
+  signup: (dto: any) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function GuestProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const storeAuth = useCallback((result: AuthResult) => {
     localStorage.setItem('accessToken', result.accessToken);
-    localStorage.setItem('refreshToken', result.refreshToken);
     localStorage.setItem('user', JSON.stringify(result.user));
     setToken(result.accessToken);
     setUser(result.user);
@@ -45,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearAuth = useCallback(() => {
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
@@ -56,33 +54,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
       setToken(storedToken);
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        clearAuth();
-      }
+      try { setUser(JSON.parse(storedUser)); } catch { clearAuth(); }
+      setIsLoading(false);
+    } else {
+      authApi.guest()
+        .then((res) => { storeAuth(res.data.data); })
+        .catch(() => { /* offline fallback */ })
+        .finally(() => setIsLoading(false));
     }
-    setIsLoading(false);
-  }, [clearAuth]);
+  }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await authApi.login({ email, password });
-    storeAuth(res.data.data);
-  }, [storeAuth]);
-
-  const signup = useCallback(async (dto: { fullName: string; email: string; password: string; collegeName?: string; course?: string; graduationYear?: number }) => {
-    const res = await authApi.signup(dto);
-    storeAuth(res.data.data);
-  }, [storeAuth]);
+  const login = useCallback(async () => { /* no-op — already auto-authenticated */ }, []);
+  const signup = useCallback(async () => { /* no-op */ }, []);
 
   const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // ignore
-    }
     clearAuth();
-  }, [clearAuth]);
+    try {
+      const res = await authApi.guest();
+      storeAuth(res.data.data);
+    } catch { /* ignore */ }
+  }, [clearAuth, storeAuth]);
 
   const updateUser = useCallback((updatedUser: User) => {
     localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -98,6 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) throw new Error('useAuth must be used within GuestProvider');
   return ctx;
 }

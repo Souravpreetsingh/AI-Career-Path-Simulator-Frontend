@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/GuestContext';
 import { useDashboardStats, useDashboardActivity, useDashboardRecommendations } from '@/hooks/useDashboard';
 import { useDashboardSocket } from '@/hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

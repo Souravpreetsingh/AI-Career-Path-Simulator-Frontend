@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/GuestContext';
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
