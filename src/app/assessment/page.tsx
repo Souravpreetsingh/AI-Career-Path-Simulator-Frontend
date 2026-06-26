@@ -77,7 +77,7 @@ export default function AssessmentPage() {
   return (
     <div ref={pageRef} className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Career Assessment</h1>
+        <h1 className="text-2xl font-bold gradient-text">Career Assessment</h1>
         <p className="text-sm text-muted-foreground mt-1">Configure your parameters for optimal path generation.</p>
         <div className="mt-4">
           <div className="h-2 bg-border/30 rounded-full overflow-hidden">

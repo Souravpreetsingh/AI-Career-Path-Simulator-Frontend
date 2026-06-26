@@ -35,15 +35,17 @@ export function Navbar() {
           {navLinks.map((link) => {
             const isActive = pathname.startsWith(link.href);
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm transition-colors ${
-                  isActive ? 'text-primary font-semibold border-b-2 border-primary pb-0.5' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {link.label}
-              </Link>
+              <span key={link.href} className="group">
+                <Link
+                  href={link.href}
+                  className={`relative text-sm transition-colors ${
+                    isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {link.label}
+                  <span className={`absolute -bottom-0.5 left-0 h-0.5 bg-primary transition-all duration-300 ease-out ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                </Link>
+              </span>
             );
           })}
         </div>

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShimmerLine } from '@/components/ui/shimmer';
 import Link from 'next/link';
 
 function AnimatedProgress({ value }: { value: number }) {
@@ -56,7 +56,7 @@ function ResultsContent() {
         <Badge variant="outline" className="mb-3 text-primary border-primary/30">
           Assessment Complete
         </Badge>
-        <h1 className="text-2xl font-bold text-foreground">Your Career Matches</h1>
+        <h1 className="text-2xl font-bold gradient-text">Your Career Matches</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Based on your skills and interests, here are your optimal career paths.
         </p>
@@ -67,9 +67,9 @@ function ResultsContent() {
           {[1, 2, 3].map((i) => (
             <Card key={i} className="bg-surface-container/50 border-border/50">
               <CardContent className="p-6">
-                <Skeleton className="h-6 w-48 mb-4" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-3/4" />
+                <ShimmerLine className="h-6 w-48 mb-4" />
+                <ShimmerLine className="h-4 w-full mb-2" />
+                <ShimmerLine className="h-4 w-3/4" />
               </CardContent>
             </Card>
           ))}
@@ -105,7 +105,7 @@ function ResultsContent() {
       ) : (
         <div ref={cardsRef} className="space-y-6">
           {sortedMatches.slice(0, 3).map(([career, percentage], idx) => (
-            <Card key={career} className={`animate-result-card bg-surface-container/50 border-border/50 relative overflow-hidden ${
+            <Card key={career} hover className={`animate-result-card bg-surface-container/50 border-border/50 relative overflow-hidden ${
               idx === 0 ? 'ring-1 ring-primary/30' : ''
             }`}>
               <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -168,7 +168,7 @@ function ResultsContent() {
           ))}
 
           {recommendations?.topMatches && recommendations.topMatches.length > 0 && (
-            <Card className="bg-surface-container/50 border-border/50">
+            <Card hover className="bg-surface-container/50 border-border/50">
               <CardContent className="p-6">
                 <h3 className="text-sm font-semibold text-foreground mb-4">AI Insights</h3>
                 <div className="space-y-3">

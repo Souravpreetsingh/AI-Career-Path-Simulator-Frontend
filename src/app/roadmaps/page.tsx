@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShimmerLine } from '@/components/ui/shimmer';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -50,7 +50,7 @@ function RoadmapsContent() {
     <div ref={pageRef} className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Career Roadmaps</h1>
+          <h1 className="text-2xl font-bold gradient-text">Career Roadmaps</h1>
           <p className="text-sm text-muted-foreground mt-1">Track your learning journey.</p>
         </div>
         <Link href="/assessment">
@@ -114,14 +114,14 @@ function RoadmapsContent() {
         <div className="space-y-4">
           {[1, 2].map((i) => (
             <Card key={i} className="bg-surface-container/50 border-border/50">
-              <CardContent className="p-6"><Skeleton className="h-32 w-full" /></CardContent>
+              <CardContent className="p-6"><ShimmerLine className="h-32 w-full" /></CardContent>
             </Card>
           ))}
         </div>
       ) : roadmaps && roadmaps.length > 0 ? (
         <div ref={roadmapsRef} className="space-y-4">
           {roadmaps.map((roadmap: any) => (
-            <Card key={roadmap._id} className="animate-roadmap-card bg-surface-container/50 border-border/50">
+            <Card key={roadmap._id} hover className="animate-roadmap-card bg-surface-container/50 border-border/50">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>

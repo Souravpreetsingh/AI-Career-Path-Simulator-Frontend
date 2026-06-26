@@ -8,7 +8,7 @@ import { useDashboardStats, useDashboardActivity, useDashboardRecommendations } 
 import { useDashboardSocket } from '@/hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShimmerLine } from '@/components/ui/shimmer';
 import Link from 'next/link';
 
 function StatsCard({ label, value, color, icon }: { label: string; value: number; color: string; icon: string }) {
@@ -18,7 +18,7 @@ function StatsCard({ label, value, color, icon }: { label: string; value: number
     animate(ref.current, { innerHTML: [0, value], duration: 1000, easing: 'easeOutCubic', round: 1 });
   }, [value]);
   return (
-    <Card className="bg-surface-container/50 border-border/50 animate-card">
+    <Card hover className="bg-surface-container/50 border-border/50 animate-card">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">{label}</CardTitle>
       </CardHeader>
@@ -57,7 +57,7 @@ export default function DashboardPage() {
     <div ref={pageRef} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
+          <h1 className="text-2xl font-bold gradient-text">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
           <p className="text-muted-foreground text-sm mt-1">Here is your career overview.</p>
         </div>
         {wsConnected && <span className="flex items-center gap-1 text-xs text-green-500"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live</span>}
@@ -70,7 +70,7 @@ export default function DashboardPage() {
       </div>
 
       {stats?.recommendedCareer && (
-        <Card className="bg-surface-container/50 border-border/50 relative overflow-hidden">
+        <Card hover className="bg-surface-container/50 border-border/50 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <CardContent className="p-6 flex items-center justify-between">
             <div>
@@ -91,7 +91,7 @@ export default function DashboardPage() {
           <CardContent>
             {activityLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+                {[1, 2, 3].map((i) => <ShimmerLine key={i} className="h-12 w-full" />)}
               </div>
             ) : activity?.recentAssessments?.length > 0 ? (
               <div ref={activityRef} className="space-y-3">
@@ -118,7 +118,7 @@ export default function DashboardPage() {
           <CardContent>
             {recLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+                {[1, 2, 3].map((i) => <ShimmerLine key={i} className="h-16 w-full" />)}
               </div>
             ) : recommendations && recommendations.length > 0 ? (
               <div ref={recsRef} className="space-y-3">

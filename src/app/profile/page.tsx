@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShimmerLine } from '@/components/ui/shimmer';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
   return (
     <div ref={pageRef} className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
+      <h1 className="text-2xl font-bold gradient-text">Profile Settings</h1>
 
       <Card className="bg-surface-container/50 border-border/50">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -132,19 +132,19 @@ export default function ProfilePage() {
         <CardContent>
           {isLoading ? (
             <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20" />)}
+              {[1, 2, 3].map((i) => <ShimmerLine key={i} className="h-20" />)}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
+              <div className="card-hover p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
                 <p className="text-2xl font-bold text-primary">{stats?.totalAssessments || 0}</p>
                 <p className="text-xs text-muted-foreground uppercase mt-1">Assessments</p>
               </div>
-              <div className="p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
+              <div className="card-hover p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
                 <p className="text-2xl font-bold text-tertiary">{stats?.totalRoadmaps || 0}</p>
                 <p className="text-xs text-muted-foreground uppercase mt-1">Roadmaps</p>
               </div>
-              <div className="p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
+              <div className="card-hover p-4 rounded-lg bg-surface-variant/30 border border-border/30 text-center">
                 <p className="text-2xl font-bold text-secondary">{stats?.totalChats || 0}</p>
                 <p className="text-xs text-muted-foreground uppercase mt-1">Chat Sessions</p>
               </div>

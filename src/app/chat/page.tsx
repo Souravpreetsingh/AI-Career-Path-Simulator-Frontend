@@ -123,7 +123,7 @@ function ChatContent() {
     <div ref={pageRef} className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold text-foreground">AI Career Assistant</h1>
+          <h1 className="text-lg font-semibold gradient-text">AI Career Assistant</h1>
           {wsConnected && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Connected" />}
         </div>
         <Button variant="outline" size="sm" onClick={newChat} className="text-xs border-border/50">New Chat</Button>
