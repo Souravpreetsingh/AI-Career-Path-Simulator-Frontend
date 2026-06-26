@@ -95,6 +95,40 @@
   }
 }
 
+.spotlight-container {
+  @apply relative min-h-screen w-full overflow-hidden;
+}
+
+.spotlight-overlay {
+  @apply absolute inset-0;
+}
+
+.spotlight {
+  @apply absolute rounded-full opacity-20 blur-[100px] pointer-events-none;
+}
+
+.spotlight-left {
+  @apply w-[600px] h-[600px] bg-purple-500/30;
+  top: 50%;
+  left: 50%;
+}
+
+.spotlight-mid {
+  @apply w-[500px] h-[500px] bg-blue-500/25;
+  top: 50%;
+  left: 50%;
+}
+
+.spotlight-right {
+  @apply w-[400px] h-[400px] bg-violet-500/20;
+  top: 50%;
+  left: 50%;
+}
+
+.spotlight-content {
+  @apply relative z-10;
+}
+
 :root {
   --background: oklch(0.075 0 0);
   --foreground: oklch(0.9 0 0);

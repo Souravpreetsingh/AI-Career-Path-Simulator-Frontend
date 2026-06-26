@@ -4,15 +4,16 @@ import { ReactNode } from 'react';
 import { GuestProvider } from '@/contexts/GuestContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Toaster } from '@/components/ui/sonner';
-import { SiteBackground } from '@/components/SiteBackground';
+import SpotlightBackground from '@/components/ui/spotlight-background';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <GuestProvider>
-        <SiteBackground />
-        {children}
-        <Toaster position="top-right" richColors />
+        <SpotlightBackground>
+          {children}
+          <Toaster position="top-right" richColors />
+        </SpotlightBackground>
       </GuestProvider>
     </QueryProvider>
   );
