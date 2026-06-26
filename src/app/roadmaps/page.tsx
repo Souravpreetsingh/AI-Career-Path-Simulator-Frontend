@@ -1,9 +1,10 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useRoadmaps, useSaveRoadmap } from '@/hooks/useRoadmaps';
+import { careerApi } from '@/services/api/career.api';
 import { usePageEnter, useStaggerChildren } from '@/hooks/useAnimatedMount';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,17 +16,22 @@ import { toast } from 'sonner';
 
 function RoadmapsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const careerParam = searchParams.get('career');
-  const { data: roadmaps, isLoading } = useRoadmaps();
+  const { data: roadmaps, isLoading, refetch } = useRoadmaps();
   const saveMutation = useSaveRoadmap();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
   const pageRef = usePageEnter();
   const roadmapsRef = useStaggerChildren('.animate-roadmap-card', { stagger: 120, delay: 200 });
 
   async function markStepComplete(roadmap: any, step: string) {
     setUpdatingId(roadmap._id);
     try {
-      const completedSteps = [...(roadmap.completedSteps || []), step];
+      const alreadyDone = (roadmap.completedSteps || []).includes(step);
+      const completedSteps = alreadyDone
+        ? (roadmap.completedSteps || [])
+        : [...(roadmap.completedSteps || []), step];
       const progress = Math.min(Math.round((completedSteps.length / (roadmap.phases?.length || 1)) * 100), 100);
       await saveMutation.mutateAsync({
         careerId: roadmap.careerId?._id || roadmap.careerId,
@@ -62,8 +68,39 @@ function RoadmapsContent() {
             </p>
             <Button
               size="sm"
+              disabled={generating}
               onClick={async () => {
-                // Create a roadmap for this career
+                if (!careerParam) return;
+                setGenerating(true);
+                try {
+                  const res = await careerApi.findByTitle(careerParam);
+                  const career = res.data.data;
+                  if (!career) {
+                    toast.error('Career not found');
+                    setGenerating(false);
+                    return;
+                  }
+                  await saveMutation.mutateAsync({
+                    careerId: career._id,
+                    phases: career.roadmapSteps || [
+                      `Learn the basics of ${career.title}`,
+                      `Build foundational ${career.title} skills`,
+                      `Work on practical projects`,
+                      `Get certified or complete advanced training`,
+                      `Apply for ${career.title} roles`,
+                    ],
+                    completedSteps: [],
+                    progress: 0,
+                  });
+                  toast.success(`Roadmap for ${career.title} created!`);
+                  refetch();
+                  router.replace('/roadmaps');
+                } catch (err: any) {
+                  const msg = err?.response?.data?.message || err?.message || 'Failed to create roadmap';
+                  toast.error(msg);
+                } finally {
+                  setGenerating(false);
+                }
               }}
               className="bg-primary-container text-on-primary-container text-xs"
             >

@@ -6,4 +6,7 @@ export const careerApi = {
 
   findById: (id: string) =>
     axiosClient.get<ApiResponse<any>>(`/careers/${id}`),
+
+  findByTitle: (title: string) =>
+    axiosClient.get<ApiResponse<any>>(`/careers/by-title/${encodeURIComponent(title)}`),
 };
