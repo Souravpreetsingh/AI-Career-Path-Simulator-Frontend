@@ -6,6 +6,7 @@ import { usePageEnter, useStaggerChildren } from '@/hooks/useAnimatedMount';
 import { useAuth } from '@/contexts/GuestContext';
 import { useDashboardStats, useDashboardActivity, useDashboardRecommendations } from '@/hooks/useDashboard';
 import { useDashboardSocket } from '@/hooks/useSocket';
+import { AuroraBackground } from '@/components/ui/aurora-background';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,7 +55,8 @@ export default function DashboardPage() {
   }, [socket, refetchStats, refetchActivity, refetchRecs]);
 
   return (
-    <div ref={pageRef} className="space-y-6">
+    <AuroraBackground fullHeight={false} className="bg-transparent dark:bg-transparent">
+    <div ref={pageRef} className="space-y-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
@@ -141,5 +143,6 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
+    </AuroraBackground>
   );
 }
