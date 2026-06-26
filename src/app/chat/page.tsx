@@ -47,22 +47,6 @@ function ChatContent() {
   }, [socket.connected]);
 
   useEffect(() => {
-    if (activeChatId && wsConnected) {
-      socket.joinChat(activeChatId);
-    }
-  }, [activeChatId, wsConnected, socket]);
-
-  useEffect(() => {
-    const unsubHistory = socket.onChatHistory((data) => {
-      if (data?.messages) {
-        setMessages(data.messages.map((m: any) => ({
-          role: m.role,
-          content: m.content,
-          timestamp: m.timestamp,
-          id: m._id || `msg-${Date.now()}-${Math.random()}`,
-        })));
-      }
-    });
     const unsubTyping = socket.onAiTyping((data) => {
       setAiThinking(data.isTyping);
     });
@@ -77,7 +61,7 @@ function ChatContent() {
       setMessages((prev) => [...prev, assistantMsg]);
       if (data.chatId) setActiveChatId(data.chatId);
     });
-    return () => { unsubHistory(); unsubTyping(); unsubMsg(); };
+    return () => { unsubTyping(); unsubMsg(); };
   }, [socket]);
 
   const chatDataRef = useRef<string | null>(null);
