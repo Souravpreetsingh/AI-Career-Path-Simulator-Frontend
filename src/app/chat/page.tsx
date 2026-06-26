@@ -80,8 +80,10 @@ function ChatContent() {
     return () => { unsubHistory(); unsubTyping(); unsubMsg(); };
   }, [socket]);
 
+  const chatDataRef = useRef<string | null>(null);
   useEffect(() => {
-    if (chatData?.messages) {
+    if (chatData?.messages && chatData._id !== chatDataRef.current) {
+      chatDataRef.current = chatData._id;
       setMessages(chatData.messages.map((m: any) => ({
         role: m.role,
         content: m.content,
