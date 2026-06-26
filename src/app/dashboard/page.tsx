@@ -1,23 +1,48 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboardStats, useDashboardActivity, useDashboardRecommendations } from '@/hooks/useDashboard';
+import { useDashboardSocket } from '@/hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: activity, isLoading: activityLoading } = useDashboardActivity();
-  const { data: recommendations, isLoading: recLoading } = useDashboardRecommendations();
+  const { user, token } = useAuth();
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useDashboardStats();
+  const { data: activity, isLoading: activityLoading, refetch: refetchActivity } = useDashboardActivity();
+  const { data: recommendations, isLoading: recLoading, refetch: refetchRecs } = useDashboardRecommendations();
+
+  const socket = useDashboardSocket(token);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  useEffect(() => {
+    setWsConnected(socket.connected);
+  }, [socket.connected]);
+
+  useEffect(() => {
+    const unsubStats = socket.onStats((data) => {
+      refetchStats();
+    });
+    const unsubActivity = socket.onActivity(() => {
+      refetchActivity();
+    });
+    const unsubRecs = socket.onRecommendations(() => {
+      refetchRecs();
+    });
+    return () => { unsubStats(); unsubActivity(); unsubRecs(); };
+  }, [socket, refetchStats, refetchActivity, refetchRecs]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
-        <p className="text-muted-foreground text-sm mt-1">Here is your career overview.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
+          <p className="text-muted-foreground text-sm mt-1">Here is your career overview.</p>
+        </div>
+        {wsConnected && <span className="flex items-center gap-1 text-xs text-green-500"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Live</span>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

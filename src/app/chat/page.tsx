@@ -1,9 +1,11 @@
 'use client';
 
-import { Suspense, useState, useEffect, useRef, FormEvent } from 'react';
+import { Suspense, useState, useEffect, useRef, FormEvent, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { useChatHistory, useSendMessage } from '@/hooks/useChat';
 import { usePrompts } from '@/hooks/useRecommendations';
+import { useChatSocket } from '@/hooks/useSocket';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +19,7 @@ interface Message {
 function ChatContent() {
   const searchParams = useSearchParams();
   const presetQuery = searchParams.get('q');
+  const { token } = useAuth();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -26,6 +29,26 @@ function ChatContent() {
 
   const { data: prompts } = usePrompts();
   const sendMutation = useSendMessage();
+
+  const socket = useChatSocket(token);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  useEffect(() => {
+    setWsConnected(socket.connected);
+  }, [socket.connected]);
+
+  useEffect(() => {
+    const unsub = socket.onNewMessage((data) => {
+      const assistantMsg: Message = {
+        role: 'assistant',
+        content: data.assistantMessage?.content || 'Let me provide some guidance on that.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+      if (data.chatId) setActiveChatId(data.chatId);
+    });
+    return unsub;
+  }, [socket]);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   useEffect(scrollToBottom, [messages]);
@@ -44,6 +67,11 @@ function ChatContent() {
     const userMsg: Message = { role: 'user', content: text, timestamp: new Date().toISOString() };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
+
+    if (wsConnected) {
+      socket.sendMessage(text, activeChatId || undefined);
+      return;
+    }
 
     try {
       const result = await sendMutation.mutateAsync({ message: text, chatId: activeChatId || undefined });
@@ -78,7 +106,10 @@ function ChatContent() {
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold text-foreground">AI Career Assistant</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-semibold text-foreground">AI Career Assistant</h1>
+          {wsConnected && <span className="w-2 h-2 rounded-full bg-green-500" title="Connected" />}
+        </div>
         <Button variant="outline" size="sm" onClick={newChat} className="text-xs border-border/50">New Chat</Button>
       </div>
 
@@ -115,7 +146,7 @@ function ChatContent() {
               </div>
             ))
           )}
-          {sendMutation.isPending && (
+          {sendMutation.isPending && !wsConnected && (
             <div className="flex justify-start">
               <div className="bg-surface-variant/50 border border-border/30 rounded-lg p-3">
                 <span className="animate-pulse text-sm text-muted-foreground">Thinking...</span>
