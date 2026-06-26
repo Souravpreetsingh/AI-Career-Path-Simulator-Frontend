@@ -146,7 +146,7 @@ function ChatContent() {
   ];
 
   return (
-    <div ref={pageRef} className="h-[calc(100vh-7rem)] flex gap-4">
+    <div ref={pageRef} className="h-[calc(100vh-8rem)] flex gap-4">
       <div className={`${showSidebar ? 'w-64 shrink-0' : 'w-0 overflow-hidden'} transition-all duration-300 ease-out`}>
         <Card className="h-full bg-surface-container/50 border-border/50 flex flex-col">
           <CardContent className="p-3 flex-1 overflow-y-auto space-y-1">
