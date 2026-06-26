@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { animate } from 'animejs';
 import { useCreateAssessment } from '@/hooks/useAssessments';
+import { usePageEnter } from '@/hooks/useAnimatedMount';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,6 +28,16 @@ const interestOptions = [
   { value: 'Design', label: 'Design & UX' },
 ];
 
+function StepContent({ children, step }: { children: React.ReactNode; step: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    animate(el, { opacity: [0, 1], translateX: [20, 0], duration: 350, easing: 'easeOutCubic' });
+  }, [step]);
+  return <div ref={ref}>{children}</div>;
+}
+
 export default function AssessmentPage() {
   const [step, setStep] = useState(1);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -34,6 +46,13 @@ export default function AssessmentPage() {
   const totalSteps = 3;
   const router = useRouter();
   const createMutation = useCreateAssessment();
+  const pageRef = usePageEnter();
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!progressRef.current) return;
+    animate(progressRef.current, { width: [`0%`, `${(step / totalSteps) * 100}%`], duration: 400, easing: 'easeOutCubic' });
+  }, [step]);
 
   function toggleSkill(skill: string) {
     setSelectedSkills((prev) =>
@@ -56,12 +75,14 @@ export default function AssessmentPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div ref={pageRef} className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Career Assessment</h1>
         <p className="text-sm text-muted-foreground mt-1">Configure your parameters for optimal path generation.</p>
         <div className="mt-4">
-          <Progress value={(step / totalSteps) * 100} className="h-2" />
+          <div className="h-2 bg-border/30 rounded-full overflow-hidden">
+            <div ref={progressRef} className="h-full bg-primary rounded-full" style={{ width: 0 }} />
+          </div>
           <div className="flex justify-between mt-1 text-xs text-muted-foreground uppercase">
             <span>Initiation</span>
             <span className="text-primary">Phase {step}/{totalSteps}</span>
@@ -72,85 +93,91 @@ export default function AssessmentPage() {
       <Card className="bg-surface-container/50 border-border/50 min-h-[400px]">
         <CardContent className="p-6">
           {step === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-                Technical Competencies
-              </h2>
-              <p className="text-sm text-muted-foreground">Select your primary areas of expertise.</p>
-              <div className="flex flex-wrap gap-2">
-                {skillOptions.map((skill) => {
-                  const active = selectedSkills.includes(skill);
-                  return (
-                    <button
-                      key={skill}
-                      onClick={() => toggleSkill(skill)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        active
-                          ? 'bg-primary/20 border border-primary/40 text-primary'
-                          : 'bg-surface-dim border border-border/50 text-muted-foreground hover:border-foreground/30'
-                      }`}
-                    >
-                      {skill}
-                    </button>
-                  );
-                })}
+            <StepContent step={step}>
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                  Technical Competencies
+                </h2>
+                <p className="text-sm text-muted-foreground">Select your primary areas of expertise.</p>
+                <div className="flex flex-wrap gap-2">
+                  {skillOptions.map((skill) => {
+                    const active = selectedSkills.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        onClick={() => toggleSkill(skill)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          active
+                            ? 'bg-primary/20 border border-primary/40 text-primary'
+                            : 'bg-surface-dim border border-border/50 text-muted-foreground hover:border-foreground/30'
+                        }`}
+                      >
+                        {skill}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">{selectedSkills.length} skills selected</p>
               </div>
-              <p className="text-xs text-muted-foreground">{selectedSkills.length} skills selected</p>
-            </div>
+            </StepContent>
           )}
 
           {step === 2 && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-                Career Interests
-              </h2>
-              <p className="text-sm text-muted-foreground">What field are you most interested in?</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {interestOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setInterests(opt.value)}
-                    className={`p-4 rounded-lg border text-left transition-all ${
-                      interests === opt.value
-                        ? 'bg-primary/20 border-primary/40 text-primary'
-                        : 'bg-surface-dim border-border/50 text-muted-foreground hover:border-foreground/30'
-                    }`}
-                  >
-                    <p className="text-sm font-medium">{opt.label}</p>
-                  </button>
-                ))}
+            <StepContent step={step}>
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                  Career Interests
+                </h2>
+                <p className="text-sm text-muted-foreground">What field are you most interested in?</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {interestOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setInterests(opt.value)}
+                      className={`p-4 rounded-lg border text-left transition-all ${
+                        interests === opt.value
+                          ? 'bg-primary/20 border-primary/40 text-primary'
+                          : 'bg-surface-dim border-border/50 text-muted-foreground hover:border-foreground/30'
+                      }`}
+                    >
+                      <p className="text-sm font-medium">{opt.label}</p>
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase text-muted-foreground">Career Goal (optional)</label>
+                  <input
+                    value={careerGoals}
+                    onChange={(e) => setCareerGoals(e.target.value)}
+                    placeholder="e.g., High Salary, Startup, Remote Work"
+                    className="w-full bg-surface-dim border border-border/50 rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase text-muted-foreground">Career Goal (optional)</label>
-                <input
-                  value={careerGoals}
-                  onChange={(e) => setCareerGoals(e.target.value)}
-                  placeholder="e.g., High Salary, Startup, Remote Work"
-                  className="w-full bg-surface-dim border border-border/50 rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
-                />
-              </div>
-            </div>
+            </StepContent>
           )}
 
           {step === 3 && (
-            <div className="space-y-6 flex flex-col items-center justify-center text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                <span className="text-2xl text-primary">AI</span>
+            <StepContent step={step}>
+              <div className="space-y-6 flex flex-col items-center justify-center text-center py-12">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <span className="text-2xl text-primary">AI</span>
+                </div>
+                <h2 className="text-lg font-semibold text-foreground">Ready for Analysis</h2>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  We will analyze your {selectedSkills.length} skills and interest in {interests || 'your selected field'}
+                  to generate personalized career matches.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {selectedSkills.slice(0, 8).map((s) => (
+                    <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
+                  ))}
+                  {selectedSkills.length > 8 && (
+                    <Badge variant="outline" className="text-xs">+{selectedSkills.length - 8}</Badge>
+                  )}
+                </div>
               </div>
-              <h2 className="text-lg font-semibold text-foreground">Ready for Analysis</h2>
-              <p className="text-sm text-muted-foreground max-w-md">
-                We will analyze your {selectedSkills.length} skills and interest in {interests || 'your selected field'}
-                to generate personalized career matches.
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {selectedSkills.slice(0, 8).map((s) => (
-                  <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
-                ))}
-                {selectedSkills.length > 8 && (
-                  <Badge variant="outline" className="text-xs">+{selectedSkills.length - 8}</Badge>
-                )}
-              </div>
-            </div>
+            </StepContent>
           )}
         </CardContent>
       </Card>

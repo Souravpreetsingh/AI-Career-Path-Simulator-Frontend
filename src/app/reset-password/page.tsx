@@ -4,6 +4,7 @@ import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authApi } from '@/services/api/auth.api';
+import { usePageEnter } from '@/hooks/useAnimatedMount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 function ResetContent() {
   const searchParams = useSearchParams();
+  const pageRef = usePageEnter();
   const router = useRouter();
   const token = searchParams.get('token') || '';
 
@@ -50,7 +52,7 @@ function ResetContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div ref={pageRef} className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md bg-surface-container/60 backdrop-blur border-border/30">
         <CardHeader className="text-center">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 border border-primary/20">

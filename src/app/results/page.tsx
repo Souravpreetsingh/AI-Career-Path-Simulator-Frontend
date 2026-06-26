@@ -1,15 +1,30 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { animate } from 'animejs';
 import { useAssessmentResults } from '@/hooks/useAssessments';
 import { useRecommendationHistory } from '@/hooks/useRecommendations';
+import { usePageEnter, useStaggerChildren } from '@/hooks/useAnimatedMount';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+
+function AnimatedProgress({ value }: { value: number }) {
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!barRef.current) return;
+    animate(barRef.current, { width: [`0%`, `${value}%`], duration: 800, easing: 'easeOutCubic', delay: 400 });
+  }, [value]);
+  return (
+    <div className="h-2 bg-border/30 rounded-full overflow-hidden">
+      <div ref={barRef} className="h-full bg-primary rounded-full" style={{ width: 0 }} />
+    </div>
+  );
+}
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -24,6 +39,8 @@ function ResultsContent() {
   });
 
   const isLoading = assessLoading || recLoading;
+  const pageRef = usePageEnter();
+  const cardsRef = useStaggerChildren('.animate-result-card', { stagger: 150, delay: 200 });
 
   const latestAssessment = assessmentData?.latest;
   const matchPercentages: Record<string, number> = latestAssessment?.matchPercentages || {};
@@ -33,7 +50,7 @@ function ResultsContent() {
     .sort(([, a], [, b]) => b - a);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div ref={pageRef} className="max-w-4xl mx-auto space-y-6">
       <div className="text-center md:text-left">
         <Badge variant="outline" className="mb-3 text-primary border-primary/30">
           Assessment Complete
@@ -68,9 +85,9 @@ function ResultsContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div ref={cardsRef} className="space-y-6">
           {sortedMatches.slice(0, 3).map(([career, percentage], idx) => (
-            <Card key={career} className={`bg-surface-container/50 border-border/50 relative overflow-hidden ${
+            <Card key={career} className={`animate-result-card bg-surface-container/50 border-border/50 relative overflow-hidden ${
               idx === 0 ? 'ring-1 ring-primary/30' : ''
             }`}>
               <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -97,7 +114,7 @@ function ResultsContent() {
                     <span className="text-muted-foreground">Compatibility</span>
                     <span className="text-primary font-medium">{percentage}%</span>
                   </div>
-                  <Progress value={percentage} className="h-2" />
+                  <AnimatedProgress value={percentage} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

@@ -2,10 +2,12 @@
 
 import { Suspense, useState, useEffect, useRef, FormEvent, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { animate } from 'animejs';
 import { useAuth } from '@/contexts/GuestContext';
 import { useChatHistory, useSendMessage } from '@/hooks/useChat';
 import { usePrompts } from '@/hooks/useRecommendations';
 import { useChatSocket } from '@/hooks/useSocket';
+import { usePageEnter } from '@/hooks/useAnimatedMount';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +16,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  id?: string;
 }
 
 function ChatContent() {
@@ -26,6 +29,7 @@ function ChatContent() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [presetSent, setPresetSent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pageRef = usePageEnter();
 
   const { data: prompts } = usePrompts();
   const sendMutation = useSendMessage();
@@ -43,6 +47,7 @@ function ChatContent() {
         role: 'assistant',
         content: data.assistantMessage?.content || 'Let me provide some guidance on that.',
         timestamp: new Date().toISOString(),
+        id: `msg-${Date.now()}`,
       };
       setMessages((prev) => [...prev, assistantMsg]);
       if (data.chatId) setActiveChatId(data.chatId);
@@ -51,7 +56,14 @@ function ChatContent() {
   }, [socket]);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    scrollToBottom();
+    const lastMsg = messagesEndRef.current?.previousElementSibling;
+    if (lastMsg) {
+      animate(lastMsg, { opacity: [0, 1], translateY: [12, 0], duration: 300, easing: 'easeOutCubic' });
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     if (presetQuery && !presetSent) {
@@ -60,11 +72,10 @@ function ChatContent() {
     }
   }, [presetQuery]);
 
-  async function handleSend(message?: string) {
-    const text = message || input;
+  const doSend = useCallback(async (text: string) => {
     if (!text.trim() || sendMutation.isPending) return;
 
-    const userMsg: Message = { role: 'user', content: text, timestamp: new Date().toISOString() };
+    const userMsg: Message = { role: 'user', content: text, timestamp: new Date().toISOString(), id: `msg-${Date.now()}` };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
 
@@ -79,17 +90,22 @@ function ChatContent() {
         role: 'assistant',
         content: result.assistantMessage?.content || 'Let me provide some guidance on that.',
         timestamp: new Date().toISOString(),
+        id: `msg-${Date.now()}`,
       };
       setMessages((prev) => [...prev, assistantMsg]);
       if (result.chatId && !activeChatId) setActiveChatId(result.chatId);
     } catch {
       setMessages((prev) => prev.slice(0, -1));
     }
+  }, [sendMutation, wsConnected, socket, activeChatId]);
+
+  async function handleSend(message?: string) {
+    await doSend(message || input);
   }
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    await handleSend();
+    doSend(input);
   }
 
   function newChat() {
@@ -104,11 +120,11 @@ function ChatContent() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
+    <div ref={pageRef} className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground">AI Career Assistant</h1>
-          {wsConnected && <span className="w-2 h-2 rounded-full bg-green-500" title="Connected" />}
+          {wsConnected && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Connected" />}
         </div>
         <Button variant="outline" size="sm" onClick={newChat} className="text-xs border-border/50">New Chat</Button>
       </div>
@@ -126,8 +142,8 @@ function ChatContent() {
               </div>
               <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                 {displayPrompts.map((prompt: string, i: number) => (
-                  <button key={i} onClick={() => handleSend(prompt)}
-                    className="px-4 py-2 rounded-full bg-surface-dim border border-border/50 text-sm text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                  <button key={i} onClick={() => doSend(prompt)}
+                    className="prompt-btn px-4 py-2 rounded-full bg-surface-dim border border-border/50 text-sm text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
                     {prompt}
                   </button>
                 ))}
@@ -135,7 +151,7 @@ function ChatContent() {
             </div>
           ) : (
             messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={msg.id || i} className={`message-bubble flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-3 rounded-lg text-sm ${
                   msg.role === 'user'
                     ? 'bg-primary-container/20 text-foreground border border-primary/20'

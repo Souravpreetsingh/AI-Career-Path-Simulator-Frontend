@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { animate } from 'animejs';
+import { usePageEnter, useStaggerChildren } from '@/hooks/useAnimatedMount';
 import { useAuth } from '@/contexts/GuestContext';
 import { useDashboardStats, useDashboardActivity, useDashboardRecommendations } from '@/hooks/useDashboard';
 import { useDashboardSocket } from '@/hooks/useSocket';
@@ -8,6 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+
+function StatsCard({ label, value, color, icon }: { label: string; value: number; color: string; icon: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (!ref.current || value === 0) return;
+    animate(ref.current, { innerHTML: [0, value], duration: 1000, easing: 'easeOutCubic', round: 1 });
+  }, [value]);
+  return (
+    <Card className="bg-surface-container/50 border-border/50 animate-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p ref={ref} className={`text-3xl font-bold ${color}`}>{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
   const { user, token } = useAuth();
@@ -17,62 +37,36 @@ export default function DashboardPage() {
 
   const socket = useDashboardSocket(token);
   const [wsConnected, setWsConnected] = useState(false);
+  const pageRef = usePageEnter();
+  const cardsRef = useStaggerChildren('.animate-card', { stagger: 120, delay: 200 });
+  const activityRef = useStaggerChildren('.animate-activity-item', { stagger: 80, delay: 400 });
+  const recsRef = useStaggerChildren('.animate-rec-item', { stagger: 80, delay: 400 });
 
   useEffect(() => {
     setWsConnected(socket.connected);
   }, [socket.connected]);
 
   useEffect(() => {
-    const unsubStats = socket.onStats((data) => {
-      refetchStats();
-    });
-    const unsubActivity = socket.onActivity(() => {
-      refetchActivity();
-    });
-    const unsubRecs = socket.onRecommendations(() => {
-      refetchRecs();
-    });
+    const unsubStats = socket.onStats((data) => { refetchStats(); });
+    const unsubActivity = socket.onActivity(() => { refetchActivity(); });
+    const unsubRecs = socket.onRecommendations(() => { refetchRecs(); });
     return () => { unsubStats(); unsubActivity(); unsubRecs(); };
   }, [socket, refetchStats, refetchActivity, refetchRecs]);
 
   return (
-    <div className="space-y-6">
+    <div ref={pageRef} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back, {user?.fullName?.split(' ')[0] || 'User'}.</h1>
           <p className="text-muted-foreground text-sm mt-1">Here is your career overview.</p>
         </div>
-        {wsConnected && <span className="flex items-center gap-1 text-xs text-green-500"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Live</span>}
+        {wsConnected && <span className="flex items-center gap-1 text-xs text-green-500"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live</span>}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-surface-container/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">Assessments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? <Skeleton className="h-8 w-16" /> :
-              <p className="text-3xl font-bold text-primary">{stats?.totalAssessments || 0}</p>}
-          </CardContent>
-        </Card>
-        <Card className="bg-surface-container/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">Roadmaps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? <Skeleton className="h-8 w-16" /> :
-              <p className="text-3xl font-bold text-tertiary">{stats?.totalRoadmaps || 0}</p>}
-          </CardContent>
-        </Card>
-        <Card className="bg-surface-container/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">Chats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? <Skeleton className="h-8 w-16" /> :
-              <p className="text-3xl font-bold text-secondary">{stats?.totalChats || 0}</p>}
-          </CardContent>
-        </Card>
+      <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatsCard label="Assessments" value={stats?.totalAssessments || 0} color="text-primary" icon="assessment" />
+        <StatsCard label="Roadmaps" value={stats?.totalRoadmaps || 0} color="text-tertiary" icon="roadmap" />
+        <StatsCard label="Chats" value={stats?.totalChats || 0} color="text-secondary" icon="chat" />
       </div>
 
       {stats?.recommendedCareer && (
@@ -100,9 +94,9 @@ export default function DashboardPage() {
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
               </div>
             ) : activity?.recentAssessments?.length > 0 ? (
-              <div className="space-y-3">
+              <div ref={activityRef} className="space-y-3">
                 {activity.recentAssessments.slice(0, 5).map((a: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                  <div key={i} className="animate-activity-item flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                     <div>
                       <p className="text-sm font-medium text-foreground">{a.interests} Assessment</p>
                       <p className="text-xs text-muted-foreground">{new Date(a.completedAt).toLocaleDateString()}</p>
@@ -127,9 +121,9 @@ export default function DashboardPage() {
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
               </div>
             ) : recommendations && recommendations.length > 0 ? (
-              <div className="space-y-3">
+              <div ref={recsRef} className="space-y-3">
                 {recommendations.map((rec: any, i: number) => (
-                  <div key={i} className="p-3 rounded-lg bg-surface-variant/30 border border-border/30">
+                  <div key={i} className="animate-rec-item p-3 rounded-lg bg-surface-variant/30 border border-border/30">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant={rec.priority === 'high' ? 'default' : 'secondary'} className="text-xs">
                         {rec.priority}

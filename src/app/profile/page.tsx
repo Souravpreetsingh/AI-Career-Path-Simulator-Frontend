@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/GuestContext';
+import { usePageEnter } from '@/hooks/useAnimatedMount';
 import { useDashboardStats } from '@/hooks/useDashboard';
 import { userApi, UpdateProfileDto } from '@/services/api/user.api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
+  const pageRef = usePageEnter();
   const { data: stats, isLoading } = useDashboardStats();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -45,7 +47,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div ref={pageRef} className="max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-foreground">Profile Settings</h1>
 
       <Card className="bg-surface-container/50 border-border/50">

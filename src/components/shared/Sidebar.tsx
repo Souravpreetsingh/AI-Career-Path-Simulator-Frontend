@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+import { animate } from 'animejs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,9 +14,16 @@ const sidebarLinks = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    animate(el, { translateX: [-60, 0], opacity: [0, 1], duration: 500, easing: 'easeOutCubic', delay: 100 });
+  }, []);
 
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-surface-container/60 backdrop-blur-xl border-r border-border py-8 z-40">
+    <aside ref={sidebarRef} className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-surface-container/60 backdrop-blur-xl border-r border-border py-8 z-40">
       <div className="px-6 mb-8 mt-16">
         <h2 className="text-lg font-semibold text-primary">Career Navigator</h2>
         <p className="text-xs text-muted-foreground uppercase mt-1">AI-Powered Future</p>
