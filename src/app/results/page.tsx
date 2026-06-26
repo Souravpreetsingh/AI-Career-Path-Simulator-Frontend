@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { animate } from 'animejs';
-import { useAssessmentResults } from '@/hooks/useAssessments';
+import { useAssessmentResults, useAssessment } from '@/hooks/useAssessments';
 import { useRecommendationHistory } from '@/hooks/useRecommendations';
 import { usePageEnter, useStaggerChildren } from '@/hooks/useAnimatedMount';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,18 +31,19 @@ function ResultsContent() {
   const router = useRouter();
   const assessmentId = searchParams.get('assessmentId');
 
-  const { data: assessmentData, isLoading: assessLoading } = useAssessmentResults();
+  const { data: assessmentData, isLoading: assessLoading, isError: assessError } = useAssessmentResults();
+  const { data: specificAssessment, isLoading: specificLoading } = useAssessment(assessmentId || '');
 
   const { data: recHistory, isLoading: recLoading } = useRecommendationHistory({
     limit: 1,
     ...(assessmentId ? {} : {}),
   });
 
-  const isLoading = assessLoading || recLoading;
+  const isLoading = assessLoading || recLoading || specificLoading;
   const pageRef = usePageEnter();
   const cardsRef = useStaggerChildren('.animate-result-card', { stagger: 150, delay: 200 });
 
-  const latestAssessment = assessmentData?.latest;
+  const latestAssessment = specificAssessment || assessmentData?.latest;
   const matchPercentages: Record<string, number> = latestAssessment?.matchPercentages || {};
   const recommendations = assessmentData?.recommendations;
 
@@ -73,7 +74,7 @@ function ResultsContent() {
             </Card>
           ))}
         </div>
-      ) : sortedMatches.length === 0 ? (
+      ) : sortedMatches.length === 0 && !assessError ? (
         <Card className="bg-surface-container/50 border-border/50">
           <CardContent className="p-12 text-center">
             <p className="text-muted-foreground mb-4">No assessment results found.</p>
@@ -82,6 +83,23 @@ function ResultsContent() {
                 Take Assessment
               </Button>
             </Link>
+          </CardContent>
+        </Card>
+      ) : sortedMatches.length === 0 && assessError && !isLoading ? (
+        <Card className="bg-surface-container/50 border-border/50">
+          <CardContent className="p-12 text-center">
+            <p className="text-muted-foreground mb-2">We could not load your assessment results.</p>
+            <p className="text-xs text-muted-foreground mb-4">This may happen right after taking an assessment. Try refreshing the page.</p>
+            <div className="flex justify-center gap-3">
+              <Button onClick={() => router.refresh()} variant="outline" className="border-border/50">
+                Refresh
+              </Button>
+              <Link href="/assessment">
+                <Button className="bg-primary-container text-on-primary-container hover:bg-primary-container/90">
+                  Take Assessment
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       ) : (
