@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef, FormEvent, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { animate } from 'animejs';
 import { useAuth } from '@/contexts/GuestContext';
-import { usePageEnter } from '@/hooks/useAnimatedMount';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +31,6 @@ function ChatContent() {
   const searchParams = useSearchParams();
   const presetQuery = searchParams.get('q');
   const { token } = useAuth();
-  const pageRef = usePageEnter();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -56,13 +53,6 @@ function ChatContent() {
   };
 
   useEffect(() => { scrollToBottom(); }, [messages.length]);
-
-  useEffect(() => {
-    const lastEl = messagesEndRef.current?.previousElementSibling;
-    if (lastEl) {
-      animate(lastEl, { opacity: [0, 1], translateY: [12, 0], duration: 300, easing: 'easeOutCubic' });
-    }
-  }, [messages.length]);
 
   useEffect(() => {
     if (!token) return;
@@ -167,7 +157,7 @@ function ChatContent() {
   }
 
   return (
-    <div ref={pageRef} className="flex gap-3 min-h-[70vh]">
+    <div className="flex gap-3 min-h-[70vh]">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-56 shrink-0' : 'w-0 overflow-hidden'} transition-all duration-300`}>
         <Card className="h-full bg-surface-container/50 border-border/50 flex flex-col py-0 gap-0">
