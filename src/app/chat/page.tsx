@@ -136,6 +136,21 @@ function ChatContent() {
     setInput('');
   }
 
+  async function deleteChat(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    try {
+      const res = await fetch(`/api/chat?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (activeChatId === id) newChat();
+        fetchChatList();
+      }
+    } catch {}
+  }
+
   async function loadChat(id: string) {
     newChat();
     setActiveChatId(id);
@@ -174,15 +189,23 @@ function ChatContent() {
                 <p className="text-xs text-muted-foreground text-center py-10">No chats yet</p>
               ) : (
                 chatList.map((chat) => (
-                  <button key={chat._id} onClick={() => { loadChat(chat._id); if (window.innerWidth < 768) setSidebarOpen(false); }}
-                    className={`w-full text-left p-3 rounded-xl text-sm transition-all ${
+                  <div key={chat._id} onClick={() => { loadChat(chat._id); if (window.innerWidth < 768) setSidebarOpen(false); }}
+                    className={`group flex items-center gap-1 p-3 rounded-xl text-sm transition-all cursor-pointer ${
                       activeChatId === chat._id
                         ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(167,139,250,0.2)]'
                         : 'text-muted-foreground hover:bg-surface-variant/40 hover:text-foreground'
                     }`}>
-                    <p className="truncate font-medium">{chat.title}</p>
-                    <p className="text-[11px] opacity-40 mt-1">{new Date(chat.updatedAt).toLocaleDateString()}</p>
-                  </button>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium">{chat.title}</p>
+                      <p className="text-[11px] opacity-40 mt-1">{new Date(chat.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                    <button onClick={(e) => deleteChat(e, chat._id)}
+                      className="opacity-0 group-hover:opacity-60 hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 ))
               )}
             </nav>
@@ -220,7 +243,7 @@ function ChatContent() {
             <h1 className="text-base font-semibold text-foreground">AI Career Assistant</h1>
             <span className="text-xs text-green-400/70">Online</span>
           </div>
-          <button className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg bg-surface-variant/30 hover:bg-surface-variant/50">
+          <button onClick={newChat} className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg bg-surface-variant/30 hover:bg-surface-variant/50">
             Clear
           </button>
         </header>

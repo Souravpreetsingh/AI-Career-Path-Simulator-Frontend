@@ -46,6 +46,35 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function DELETE(req: NextRequest) {
+  try {
+    const auth = req.headers.get('authorization');
+    if (!auth) {
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Chat ID is required' }, { status: 400 });
+    }
+
+    const response = await fetch(`${BACKEND_URL}/chat/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': auth },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return NextResponse.json({ success: false, error: data.message || 'Failed to delete' }, { status: response.status });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || 'Something went wrong' }, { status: 500 });
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const auth = req.headers.get('authorization');
