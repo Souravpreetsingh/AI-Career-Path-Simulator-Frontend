@@ -14,10 +14,12 @@ export default function Home() {
     <div className="fixed inset-0 z-50 flex bg-background">
       {/* Left — Robot */}
       <div className="hidden lg:flex w-1/2 h-full items-center justify-center relative overflow-hidden">
-        <InteractiveRobotSpline
-          scene={ROBOT_SCENE_URL}
-          className="w-full h-full"
-        />
+        <div className="scale-[1.6]">
+          <InteractiveRobotSpline
+            scene={ROBOT_SCENE_URL}
+            className="w-full h-full"
+          />
+        </div>
       </div>
 
       {/* Right — Content */}
