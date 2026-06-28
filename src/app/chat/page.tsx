@@ -156,9 +156,9 @@ function ChatContent() {
   }
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-surface -mt-24 -mb-8 -mx-4 md:-mx-8">
+    <div className="w-screen h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} shrink-0 transition-all duration-300 flex flex-col bg-surface-container/80 backdrop-blur-xl border-r border-border/30`}>
+      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} shrink-0 h-screen border-r border-border/30 transition-all duration-300 flex flex-col bg-surface-container/80 backdrop-blur-xl`}>
         {sidebarOpen && (
           <>
             {/* New Chat */}
@@ -205,30 +205,28 @@ function ChatContent() {
 
       {/* Toggle sidebar */}
       <button onClick={() => setSidebarOpen((v) => !v)}
-        className="shrink-0 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-variant/40 transition-colors self-stretch">
+        className="shrink-0 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-variant/40 transition-colors h-screen">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'} />
         </svg>
       </button>
 
       {/* Main chat area */}
-      <main className="flex-1 flex flex-col h-screen min-w-0">
+      <main className="flex-1 h-screen flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-border/30 shrink-0 bg-surface/40 backdrop-blur-sm">
+        <header className="h-16 border-b border-border/30 shrink-0 flex items-center justify-between px-6 bg-surface/40 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
             <h1 className="text-base font-semibold text-foreground">AI Career Assistant</h1>
             <span className="text-xs text-green-400/70">Online</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg bg-surface-variant/30 hover:bg-surface-variant/50">
-              Clear
-            </button>
-          </div>
+          <button className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg bg-surface-variant/30 hover:bg-surface-variant/50">
+            Clear
+          </button>
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <section className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && !loading && !error ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_24px_rgba(167,139,250,0.15)]">
@@ -238,7 +236,7 @@ function ChatContent() {
                 <h2 className="text-lg font-semibold text-foreground">How can I help you?</h2>
                 <p className="text-sm text-muted-foreground mt-1">Ask me anything about careers and skills.</p>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+              <div className="flex flex-wrap gap-2 justify-center">
                 {SUGGESTED.map((prompt, i) => (
                   <button key={i} onClick={() => handlePrompt(prompt)}
                     className="px-4 py-2.5 rounded-xl bg-surface-variant/30 border border-border/40 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all">
@@ -296,11 +294,11 @@ function ChatContent() {
           )}
 
           <div ref={messagesEndRef} />
-        </div>
+        </section>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="sticky bottom-0 w-full border-t border-border/30 backdrop-blur-xl bg-surface/60 px-6 py-4 shrink-0">
-          <div className="flex gap-3 max-w-4xl mx-auto">
+        <footer className="h-20 border-t border-border/30 shrink-0 backdrop-blur-xl bg-surface/60 px-6 flex items-center">
+          <form onSubmit={handleSubmit} className="flex gap-3 w-full">
             <Input value={input} onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about careers, skills, or guidance..."
               className="bg-surface-dim/80 border-border/40 flex-1 h-12 rounded-xl text-sm" disabled={loading} />
@@ -308,8 +306,8 @@ function ChatContent() {
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 rounded-xl text-sm font-medium">
               Send
             </Button>
-          </div>
-        </form>
+          </form>
+        </footer>
       </main>
     </div>
   );
@@ -319,7 +317,7 @@ export const dynamic = 'force-dynamic';
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-surface"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
+    <Suspense fallback={<div className="w-screen h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
       <ChatContent />
     </Suspense>
   );
