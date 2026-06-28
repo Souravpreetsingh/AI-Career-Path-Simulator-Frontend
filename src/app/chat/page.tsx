@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, FormEvent, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/GuestContext';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -157,65 +156,92 @@ function ChatContent() {
   }
 
   return (
-    <div className="flex gap-3 min-h-[calc(100vh-8rem)]">
+    <div className="h-screen w-full flex overflow-hidden bg-surface -mt-24 -mb-8 -mx-4 md:-mx-8">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-56 shrink-0' : 'w-0 overflow-hidden'} transition-all duration-300`}>
-        <Card className="h-full bg-surface-container/50 border-border/50 flex flex-col py-0 gap-0">
-          <div className="p-3 border-b border-border/50">
-            <Button size="sm" onClick={newChat} className="w-full bg-primary-container text-on-primary-container hover:bg-primary-container/90 text-xs justify-center">
-              + New Chat
-            </Button>
-          </div>
-          <CardContent className="flex-1 overflow-y-auto p-2 space-y-1">
-            {chatList.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6">No chats yet</p>
-            ) : (
-              chatList.map((chat) => (
-                <button key={chat._id} onClick={() => { loadChat(chat._id); if (window.innerWidth < 768) setSidebarOpen(false); }}
-                  className={`w-full text-left p-2 rounded-lg text-xs transition-colors ${activeChatId === chat._id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-surface-variant/50 hover:text-foreground'}`}>
-                  <p className="truncate font-medium">{chat.title}</p>
-                  <p className="text-[10px] opacity-50 mt-0.5">{new Date(chat.updatedAt).toLocaleDateString()}</p>
-                </button>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} shrink-0 transition-all duration-300 flex flex-col bg-surface-container/80 backdrop-blur-xl border-r border-border/30`}>
+        {sidebarOpen && (
+          <>
+            {/* New Chat */}
+            <div className="p-4 border-b border-border/20">
+              <Button onClick={newChat} className="w-full bg-primary/20 text-primary hover:bg-primary/30 text-sm font-medium justify-center rounded-xl h-10">
+                + New Chat
+              </Button>
+            </div>
+
+            {/* Chat history */}
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+              {chatList.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-10">No chats yet</p>
+              ) : (
+                chatList.map((chat) => (
+                  <button key={chat._id} onClick={() => { loadChat(chat._id); if (window.innerWidth < 768) setSidebarOpen(false); }}
+                    className={`w-full text-left p-3 rounded-xl text-sm transition-all ${
+                      activeChatId === chat._id
+                        ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(167,139,250,0.2)]'
+                        : 'text-muted-foreground hover:bg-surface-variant/40 hover:text-foreground'
+                    }`}>
+                    <p className="truncate font-medium">{chat.title}</p>
+                    <p className="text-[11px] opacity-40 mt-1">{new Date(chat.updatedAt).toLocaleDateString()}</p>
+                  </button>
+                ))
+              )}
+            </nav>
+
+            {/* Profile */}
+            <div className="p-4 border-t border-border/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-xs text-primary font-semibold">G</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">Guest</p>
+                  <p className="text-[11px] text-muted-foreground truncate">Free Account</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </aside>
 
       {/* Toggle sidebar */}
       <button onClick={() => setSidebarOpen((v) => !v)}
-        className="shrink-0 h-8 w-8 mt-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-surface-variant/50 self-start">
+        className="shrink-0 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-variant/40 transition-colors self-stretch">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'} />
         </svg>
       </button>
 
-      {/* Main chat */}
-      <Card className="flex-1 bg-surface-container/50 border-border/50 flex flex-col overflow-hidden py-0 gap-0">
+      {/* Main chat area */}
+      <main className="flex-1 flex flex-col h-screen min-w-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <h1 className="text-sm font-semibold text-foreground">AI Career Assistant</h1>
+        <header className="flex items-center justify-between px-6 py-4 border-b border-border/30 shrink-0 bg-surface/40 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
+            <h1 className="text-base font-semibold text-foreground">AI Career Assistant</h1>
+            <span className="text-xs text-green-400/70">Online</span>
           </div>
-          <span className="text-[10px] text-muted-foreground">Online</span>
-        </div>
+          <div className="flex items-center gap-2">
+            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg bg-surface-variant/30 hover:bg-surface-variant/50">
+              Clear
+            </button>
+          </div>
+        </header>
 
         {/* Messages */}
-        <CardContent className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && !loading && !error ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                <span className="text-xl text-primary font-semibold">AI</span>
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_24px_rgba(167,139,250,0.15)]">
+                <span className="text-2xl text-primary font-semibold">AI</span>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-foreground">How can I help you?</h2>
-                <p className="text-xs text-muted-foreground mt-1">Ask me anything about careers and skills.</p>
+                <h2 className="text-lg font-semibold text-foreground">How can I help you?</h2>
+                <p className="text-sm text-muted-foreground mt-1">Ask me anything about careers and skills.</p>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center max-w-md">
+              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                 {SUGGESTED.map((prompt, i) => (
                   <button key={i} onClick={() => handlePrompt(prompt)}
-                    className="px-3 py-2 rounded-lg bg-surface-dim border border-border/50 text-xs text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                    className="px-4 py-2.5 rounded-xl bg-surface-variant/30 border border-border/40 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all">
                     {prompt}
                   </button>
                 ))}
@@ -224,13 +250,18 @@ function ChatContent() {
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] px-3 py-2.5 rounded-xl text-sm leading-relaxed ${
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-3 mt-1 shrink-0">
+                    <span className="text-xs text-primary font-semibold">AI</span>
+                  </div>
+                )}
+                <div className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-br-md'
-                    : 'bg-surface-variant/60 text-foreground border border-border/30 rounded-bl-md'
+                    ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20'
+                    : 'bg-surface-container/70 border border-border/30 text-foreground rounded-2xl rounded-bl-md backdrop-blur-sm'
                 }`}>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground/50'}`}>
+                  <p className={`text-[11px] mt-1.5 ${msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground/50'}`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -240,14 +271,16 @@ function ChatContent() {
 
           {/* Typing indicator */}
           {loading && (
-            <div className="flex justify-start">
-              <div className="bg-surface-variant/60 border border-border/30 rounded-xl rounded-bl-md px-4 py-3 flex items-center gap-2.5">
-                <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0s' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.15s' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.3s' }} />
+            <div className="flex justify-start items-end gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-xs text-primary font-semibold">AI</span>
+              </div>
+              <div className="bg-surface-container/70 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3 backdrop-blur-sm">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0s' }} />
+                  <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.15s' }} />
+                  <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.3s' }} />
                 </div>
-                <span className="text-xs text-muted-foreground">AI is thinking</span>
               </div>
             </div>
           )}
@@ -255,25 +288,29 @@ function ChatContent() {
           {/* Error */}
           {error && (
             <div className="flex justify-center">
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-2 flex items-center gap-2">
-                <span className="text-xs text-destructive">{error}</span>
-                <button onClick={() => setError('')} className="text-xs text-destructive/70 hover:text-destructive underline">Dismiss</button>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl px-5 py-3 flex items-center gap-3 backdrop-blur-sm">
+                <span className="text-sm text-destructive">{error}</span>
+                <button onClick={() => setError('')} className="text-sm text-destructive/70 hover:text-destructive underline">Dismiss</button>
               </div>
             </div>
           )}
 
           <div ref={messagesEndRef} />
-        </CardContent>
+        </div>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="flex gap-2 px-4 py-3 border-t border-border/50 shrink-0">
-          <Input value={input} onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about careers, skills, or guidance..."
-            className="bg-surface-dim border-border/50 flex-1" disabled={loading} />
-          <Button type="submit" disabled={!input.trim() || loading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90">Send</Button>
+        <form onSubmit={handleSubmit} className="sticky bottom-0 w-full border-t border-border/30 backdrop-blur-xl bg-surface/60 px-6 py-4 shrink-0">
+          <div className="flex gap-3 max-w-4xl mx-auto">
+            <Input value={input} onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about careers, skills, or guidance..."
+              className="bg-surface-dim/80 border-border/40 flex-1 h-12 rounded-xl text-sm" disabled={loading} />
+            <Button type="submit" disabled={!input.trim() || loading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 rounded-xl text-sm font-medium">
+              Send
+            </Button>
+          </div>
         </form>
-      </Card>
+      </main>
     </div>
   );
 }
@@ -282,7 +319,7 @@ export const dynamic = 'force-dynamic';
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
+    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-surface"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
       <ChatContent />
     </Suspense>
   );
