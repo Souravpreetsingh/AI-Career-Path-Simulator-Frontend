@@ -37,9 +37,9 @@ export default function Home() {
 
           {/* Title */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-            Map Your{' '}
+            AI Career{' '}
             <span className="bg-gradient-to-r from-primary via-purple-400 to-blue-400 bg-clip-text text-transparent">
-              Career Future
+              Path Simulator
             </span>
           </h1>
 
