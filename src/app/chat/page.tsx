@@ -156,9 +156,9 @@ function ChatContent() {
   }
 
   return (
-    <div className="w-screen h-screen flex bg-background">
+    <div className="fixed inset-0 z-50 flex bg-background">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} shrink-0 h-screen border-r border-border/30 transition-all duration-300 flex flex-col bg-surface-container/80 backdrop-blur-xl`}>
+      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} shrink-0 h-full border-r border-border/30 transition-all duration-300 flex flex-col bg-surface-container/80 backdrop-blur-xl`}>
         {sidebarOpen && (
           <>
             {/* New Chat */}
@@ -205,14 +205,14 @@ function ChatContent() {
 
       {/* Toggle sidebar */}
       <button onClick={() => setSidebarOpen((v) => !v)}
-        className="shrink-0 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-variant/40 transition-colors h-screen">
+        className="shrink-0 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-variant/40 transition-colors h-full">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'} />
         </svg>
       </button>
 
       {/* Main chat area */}
-      <main className="flex-1 h-screen flex flex-col min-w-0">
+      <main className="flex-1 h-full flex flex-col min-w-0">
         {/* Header */}
         <header className="h-16 border-b border-border/30 shrink-0 flex items-center justify-between px-6 bg-surface/40 backdrop-blur-sm">
           <div className="flex items-center gap-3">
@@ -317,7 +317,7 @@ export const dynamic = 'force-dynamic';
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="w-screen h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
+    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>}>
       <ChatContent />
     </Suspense>
   );
