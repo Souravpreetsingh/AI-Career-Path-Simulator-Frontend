@@ -9,7 +9,6 @@ const sidebarLinks = [
   { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
   { href: '/results', label: 'Career Paths', icon: 'insights' },
   { href: '/chat', label: 'AI Chat', icon: 'smart_toy' },
-  { href: '/profile', label: 'Settings', icon: 'settings' },
 ];
 
 export function Sidebar() {

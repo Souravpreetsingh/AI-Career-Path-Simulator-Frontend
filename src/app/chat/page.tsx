@@ -210,18 +210,7 @@ function ChatContent() {
               )}
             </nav>
 
-            {/* Profile */}
-            <div className="p-4 border-t border-border/20">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-xs text-primary font-semibold">G</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">Guest</p>
-                  <p className="text-[11px] text-muted-foreground truncate">Free Account</p>
-                </div>
-              </div>
-            </div>
+
           </>
         )}
       </aside>

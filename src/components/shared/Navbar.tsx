@@ -4,19 +4,15 @@ import { useEffect, useRef } from 'react';
 import { animate } from 'animejs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/GuestContext';
-
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/assessment', label: 'Assessment' },
   { href: '/results', label: 'Results' },
   { href: '/chat', label: 'Assistant' },
-  { href: '/profile', label: 'Profile' },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -27,7 +23,7 @@ export function Navbar() {
 
   return (
     <nav ref={navRef} className="bg-surface/60 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-border shadow-sm">
-      <div className="flex justify-between items-center h-16 px-6 max-w-[1280px] mx-auto">
+      <div className="flex justify-between items-center h-16 px-6 w-full">
         <Link href="/dashboard" className="font-semibold text-primary tracking-tight text-lg">
           AI Career Path Simulator
         </Link>
@@ -49,15 +45,7 @@ export function Navbar() {
             );
           })}
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground hidden sm:block">{user?.fullName}</span>
-          <button
-            onClick={logout}
-            className="text-sm text-muted-foreground hover:text-foreground border border-border px-3 py-1.5 rounded-lg hover:border-primary/50 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
+
       </div>
     </nav>
   );
