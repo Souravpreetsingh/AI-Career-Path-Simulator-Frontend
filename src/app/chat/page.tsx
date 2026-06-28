@@ -167,7 +167,7 @@ function ChatContent() {
   }
 
   return (
-    <div ref={pageRef} className="h-[calc(100vh-8rem)] mt-8 flex gap-3">
+    <div ref={pageRef} className="h-[calc(100vh-6rem)] flex gap-3">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-56 shrink-0' : 'w-0 overflow-hidden'} transition-all duration-300`}>
         <Card className="h-full bg-surface-container/50 border-border/50 flex flex-col py-0 gap-0">
