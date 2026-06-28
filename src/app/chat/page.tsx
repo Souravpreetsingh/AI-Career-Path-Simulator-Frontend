@@ -146,7 +146,7 @@ function ChatContent() {
   ];
 
   return (
-    <div ref={pageRef} className="h-[calc(100vh-10rem)] mt-8 flex gap-4">
+    <div ref={pageRef} className="h-[calc(100vh-8rem)] mt-8 flex gap-4">
       <div className={`${showSidebar ? 'w-64 shrink-0' : 'w-0 overflow-hidden'} transition-all duration-300 ease-out`}>
         <Card className="h-full bg-surface-container/50 border-border/50 flex flex-col">
           <CardContent className="p-3 flex-1 overflow-y-auto space-y-1">
@@ -240,7 +240,7 @@ function ChatContent() {
           <div ref={messagesEndRef} />
         </CardContent>
 
-        <form onSubmit={handleSubmit} className="p-4 border-t border-border/50 flex gap-2 shrink-0">
+        <form onSubmit={handleSubmit} className="px-4 py-3 border-t border-border/50 flex gap-2 shrink-0">
           <Input value={input} onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about careers, skills, or guidance..."
             className="bg-surface-dim border-border/50 flex-1" disabled={sendMutation.isPending || aiThinking} />
