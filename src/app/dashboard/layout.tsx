@@ -9,7 +9,7 @@ export default function AuthenticatedLayout({ children }: { children: ReactNode 
     <div className="min-h-screen bg-transparent">
       <Navbar />
       <Sidebar />
-      <main className="md:ml-64 pt-24 pb-0 px-4 md:px-8 max-w-[1280px] relative">
+      <main className="md:ml-64 pt-24 pb-8 px-4 md:px-8 max-w-[1280px] relative">
         {children}
       </main>
     </div>
